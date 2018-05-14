@@ -107,20 +107,13 @@ class LanguageListViewModelTests: XCTestCase {
         
         viewModel.loginResult.subscribe().disposed(by: bag)
         
-        _ = testScheduler.start { self.viewModel.loadingHidden }
-        let expectation1 = expectation(description: "Wait for completiong")
-        var expectedResult = [Bool]()
-        
-        /// There must be a better way to write this test (instead of using waitForExpecation)
-        self.viewModel.loadingHidden.subscribe(onNext: { val in
-            expectedResult.append(val)
-            if expectedResult.count == 2 {
-                expectation1.fulfill()
-            }
-        }).disposed(by: self.bag)
-        
-        waitForExpectations(timeout: 2) { error in
-             XCTAssertEqual(expectedResult, [false, true])
-        }
+        let observer = testScheduler.start { self.viewModel.loadingHidden }
+
+        let expectedEvents = [
+            next(200, true),
+            next(600, false)
+        ]
+
+        XCTAssertEqual(observer.events, expectedEvents)
     }
 }
